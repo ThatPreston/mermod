@@ -5,7 +5,6 @@ import io.github.thatpreston.mermod.client.render.TailStyle;
 import io.github.thatpreston.mermod.config.MermodConfig;
 import io.github.thatpreston.mermod.registry.RegistryHandler;
 import net.minecraft.core.cauldron.CauldronInteraction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -46,10 +45,6 @@ public class Mermod {
     public static boolean hasTailStyle(Player player) {
         ItemStack necklace = getNecklace(player);
         return !necklace.isEmpty() || MermodPlatform.hasTailStyle(player);
-    }
-    public static int getItemColor(ItemStack stack) {
-        CompoundTag tag = stack.getTagElement("display");
-        return tag != null && tag.contains("color", 99) ? tag.getInt("color") : 16777215;
     }
     public static void addEffects(LivingEntity entity) {
         if(entity.isInWater()) {

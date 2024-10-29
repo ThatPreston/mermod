@@ -11,6 +11,7 @@ import io.github.thatpreston.mermod.registry.RegistryHandler;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.DyedItemColor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +23,8 @@ public class MermodClient {
     public static final ModelLayerLocation SIREN_TAIL_LAYER = createTailModelLayer("siren_tail");
     public static void init() {
         registerConfigScreen();
-        ColorHandlerRegistry.registerItemColors((stack, index) -> index > 0 ? Mermod.getItemColor(stack) : -1, RegistryHandler.SEA_NECKLACE::get);
-        ColorHandlerRegistry.registerItemColors((stack, index) -> Mermod.getItemColor(stack), RegistryHandler.MERMAID_BRA_MODIFIER::get, RegistryHandler.TAIL_GRADIENT_MODIFIER::get);
+        ColorHandlerRegistry.registerItemColors((stack, index) -> index > 0 ? DyedItemColor.getOrDefault(stack, -1) : -1, RegistryHandler.SEA_NECKLACE::get);
+        ColorHandlerRegistry.registerItemColors((stack, index) -> DyedItemColor.getOrDefault(stack, -1), RegistryHandler.MERMAID_BRA_MODIFIER::get, RegistryHandler.TAIL_GRADIENT_MODIFIER::get);
         EntityModelLayerRegistry.register(DEFAULT_TAIL_LAYER, () -> TailLayerDefinitions.getDefault(false));
         EntityModelLayerRegistry.register(H2O_TAIL_LAYER, () -> TailLayerDefinitions.getDefault(true));
         EntityModelLayerRegistry.register(SIREN_TAIL_LAYER, TailLayerDefinitions::getSiren);

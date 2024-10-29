@@ -3,7 +3,7 @@ package io.github.thatpreston.mermod.recipe;
 import io.github.thatpreston.mermod.item.SeaNecklaceItem;
 import io.github.thatpreston.mermod.item.modifier.NecklaceModifierItem;
 import io.github.thatpreston.mermod.registry.RegistryHandler;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
@@ -41,7 +41,7 @@ public class NecklaceModifierRecipe extends CustomRecipe {
         return necklace != null && !modifiers.isEmpty() && SeaNecklaceItem.canAddModifiers(necklace, modifiers);
     }
     @Override
-    public ItemStack assemble(CraftingContainer container, RegistryAccess access) {
+    public ItemStack assemble(CraftingContainer container, HolderLookup.Provider provider) {
         List<ItemStack> modifiers = new ArrayList<>();
         ItemStack necklace = null;
         for(int i = 0; i < container.getContainerSize(); i++) {
