@@ -2,25 +2,27 @@ package io.github.thatpreston.mermod.item;
 
 import dev.architectury.extensions.ItemExtension;
 import io.github.thatpreston.mermod.Mermod;
-import io.github.thatpreston.mermod.item.modifier.DyeableNecklaceModifierItem;
 import io.github.thatpreston.mermod.item.modifier.NecklaceModifier;
 import io.github.thatpreston.mermod.item.modifier.NecklaceModifierItem;
+import io.github.thatpreston.mermod.item.modifier.NecklaceModifiers;
+import io.github.thatpreston.mermod.registry.RegistryHandler;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class SeaNecklaceItem extends Item implements DyeableLeatherItem, ItemExtension {
+public class SeaNecklaceItem extends Item implements ItemExtension {
     public SeaNecklaceItem() {
         super(new Item.Properties().arch$tab(CreativeModeTabs.TOOLS_AND_UTILITIES).stacksTo(1));
     }
@@ -46,18 +48,22 @@ public class SeaNecklaceItem extends Item implements DyeableLeatherItem, ItemExt
     public void tickArmor(ItemStack stack, Player player) {
         Mermod.addEffects(player);
     }
-    public static void addModifiers(ItemStack necklace, List<ItemStack> modifiers) {
-        for(ItemStack stack : modifiers) {
+    public static void addModifiers(ItemStack necklace, List<ItemStack> list) {
+        NecklaceModifiers modifiers = necklace.getOrDefault(RegistryHandler.NECKLACE_MODIFIERS.get(), NecklaceModifiers.EMPTY).copy();
+        for(ItemStack stack : list) {
             NecklaceModifierItem item = (NecklaceModifierItem)stack.getItem();
-            item.addModifier(necklace, stack);
+            NecklaceModifier modifier = item.getModifier();
+            modifiers.add(item.getType(), stack.is(ItemTags.DYEABLE) ? modifier.withColor(DyedItemColor.getOrDefault(stack, -1)) : modifier);
         }
+        necklace.set(RegistryHandler.NECKLACE_MODIFIERS.get(), modifiers);
     }
-    public static boolean canAddModifiers(ItemStack necklace, List<ItemStack> modifiers) {
+    public static boolean canAddModifiers(ItemStack necklace, List<ItemStack> list) {
+        NecklaceModifiers modifiers = necklace.getOrDefault(RegistryHandler.NECKLACE_MODIFIERS.get(), NecklaceModifiers.EMPTY);
         ArrayList<String> addedTypes = new ArrayList<>();
-        for(ItemStack stack : modifiers) {
+        for(ItemStack stack : list) {
             NecklaceModifierItem item = (NecklaceModifierItem)stack.getItem();
-            String type = item.getModifier().getType();
-            if(addedTypes.contains(type) || !item.canAddModifier(necklace)) {
+            String type = item.getType();
+            if(addedTypes.contains(type) || modifiers.contains(type)) {
                 return false;
             }
             addedTypes.add(type);
@@ -65,28 +71,32 @@ public class SeaNecklaceItem extends Item implements DyeableLeatherItem, ItemExt
         return true;
     }
     public static ItemStack removeModifier(ItemStack necklace) {
-        for(NecklaceModifierItem item : NecklaceModifierItem.MODIFIERS) {
-            ItemStack stack = item.removeModifier(necklace);
-            if(!stack.isEmpty()) {
-                return stack;
+        NecklaceModifiers modifiers = necklace.get(RegistryHandler.NECKLACE_MODIFIERS.get());
+        if(modifiers != null) {
+            for(NecklaceModifierItem item : NecklaceModifierItem.MODIFIERS) {
+                if(modifiers.canRemove(item)) {
+                    NecklaceModifiers copy = modifiers.copy();
+                    ItemStack stack = copy.remove(item);
+                    necklace.set(RegistryHandler.NECKLACE_MODIFIERS.get(), copy);
+                    if(!stack.isEmpty()) {
+                        return stack;
+                    }
+                }
             }
         }
         return ItemStack.EMPTY;
     }
     @Override
-    public void appendHoverText(ItemStack necklace, @Nullable Level level, List<Component> list, TooltipFlag flag) {
-        CompoundTag tag = necklace.getOrCreateTagElement("necklace_modifiers");
-        int count = 0;
-        for(NecklaceModifierItem item : NecklaceModifierItem.MODIFIERS) {
-            NecklaceModifier modifier = item.getModifier();
-            if(modifier.isAdded(tag)) {
-                int color = item instanceof DyeableNecklaceModifierItem ? tag.getInt(modifier.getType() + "_color") : modifier.getTooltipColor();
-                list.add(Component.translatable("item.mermod." + modifier.getId() + "_modifier").withStyle(Style.EMPTY.withColor(color)));
-                count++;
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> list, TooltipFlag flag) {
+        NecklaceModifiers component = stack.get(RegistryHandler.NECKLACE_MODIFIERS.get());
+        if(component != null) {
+            Map<String, NecklaceModifier> modifiers = component.modifiers();
+            if(!modifiers.isEmpty()) {
+                for(NecklaceModifier modifier : modifiers.values()) {
+                    list.add(Component.translatable("item.mermod." + modifier.id() + "_modifier").withStyle(Style.EMPTY.withColor(modifier.color())));
+                }
+                list.add(Component.translatable("item.mermod.sea_necklace.tooltip").withStyle(ChatFormatting.GRAY));
             }
-        }
-        if(count > 0) {
-            list.add(Component.translatable("item.mermod.sea_necklace.tooltip").withStyle(ChatFormatting.GRAY));
         }
     }
 }
