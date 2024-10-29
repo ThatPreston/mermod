@@ -6,7 +6,7 @@ modId = "${mod_id}"
 version = "${mod_version}"
 displayName = "${mod_name}"
 authors = "ThatPreston"
-credits = "Translations by albertosaurio65 and Junnaturefox"
+credits = "Translations by albertosaurio65, Junnaturefox, and Lobster0228"
 description = '''${mod_description}'''
 logoFile = "icon.png"
 [[dependencies.${mod_id}]]
