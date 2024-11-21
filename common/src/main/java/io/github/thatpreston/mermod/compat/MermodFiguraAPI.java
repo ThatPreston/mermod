@@ -76,4 +76,7 @@ public class MermodFiguraAPI implements FiguraAPI {
     public static boolean isTailVisible(UUID uuid) {
         return TAIL_VISIBLE.getOrDefault(uuid, true);
     }
+    public static void resetVisible(UUID uuid) {
+        TAIL_VISIBLE.removeBoolean(uuid);
+    }
 }
