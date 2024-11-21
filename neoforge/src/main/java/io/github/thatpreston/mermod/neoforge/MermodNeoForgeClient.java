@@ -9,13 +9,10 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 @EventBusSubscriber(modid = Mermod.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class MermodNeoForgeClient {
-    @SubscribeEvent
-    public static void clientSetup(final FMLClientSetupEvent event) {}
     @SubscribeEvent
     public static void addLayer(final EntityRenderersEvent.AddLayers event) {
         for(PlayerSkin.Model skin : event.getSkins()) {

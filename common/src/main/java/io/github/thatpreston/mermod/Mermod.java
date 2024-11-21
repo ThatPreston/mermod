@@ -1,6 +1,8 @@
 package io.github.thatpreston.mermod;
 
+import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
 import io.github.thatpreston.mermod.client.render.TailStyle;
 import io.github.thatpreston.mermod.config.MermodConfig;
 import io.github.thatpreston.mermod.registry.RegistryHandler;
@@ -21,6 +23,9 @@ public class Mermod {
     public static void init() {
         RegistryHandler.register();
         figuraLoaded = Platform.isModLoaded("figura");
+        if(Platform.getEnvironment() == Env.CLIENT) {
+            MermodClient.init();
+        }
     }
     public static void registerCauldronInteractions() {
         Map<Item, CauldronInteraction> map = CauldronInteraction.WATER.map();
