@@ -2,6 +2,7 @@ package io.github.thatpreston.mermod.item.modifier;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -9,14 +10,15 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
 
-import java.util.HashMap;
+import java.util.Map;
 
-public record NecklaceModifiers(HashMap<String, NecklaceModifier> modifiers) {
-    public static final NecklaceModifiers EMPTY = new NecklaceModifiers(new HashMap<>());
-    public static final Codec<NecklaceModifiers> CODEC = Codec.unboundedMap(Codec.STRING, NecklaceModifier.CODEC).xmap(map -> new NecklaceModifiers(new HashMap<>(map)), NecklaceModifiers::modifiers);
-    public static final StreamCodec<ByteBuf, NecklaceModifiers> STREAM_CODEC = ByteBufCodecs.map(HashMap::new, ByteBufCodecs.STRING_UTF8, NecklaceModifier.STREAM_CODEC).map(NecklaceModifiers::new, NecklaceModifiers::modifiers);
+public record NecklaceModifiers(Map<String, NecklaceModifier> modifiers) {
+    public static final NecklaceModifiers EMPTY = new NecklaceModifiers(Map.of());
+    public static final Codec<NecklaceModifiers> CODEC;
+    private static final StreamCodec<ByteBuf, Map<String, NecklaceModifier>> MODIFIERS_STREAM_CODEC;
+    public static final StreamCodec<ByteBuf, NecklaceModifiers> STREAM_CODEC;
     public NecklaceModifiers copy() {
-        return new NecklaceModifiers(new HashMap<>(modifiers));
+        return new NecklaceModifiers(new Object2ObjectOpenHashMap<>(modifiers));
     }
     public void add(String type, NecklaceModifier modifier) {
         modifiers.put(type, modifier);
@@ -26,7 +28,7 @@ public record NecklaceModifiers(HashMap<String, NecklaceModifier> modifiers) {
         if(modifier != null) {
             ItemStack stack = item.getDefaultInstance();
             if(stack.is(ItemTags.DYEABLE)) {
-                stack.set(DataComponents.DYED_COLOR, new DyedItemColor(modifier.color(), false));
+                stack.set(DataComponents.DYED_COLOR, new DyedItemColor(modifier.color(), true));
             }
             return stack;
         }
@@ -41,5 +43,10 @@ public record NecklaceModifiers(HashMap<String, NecklaceModifier> modifiers) {
     }
     public boolean contains(String type) {
         return modifiers.containsKey(type);
+    }
+    static {
+        CODEC = Codec.unboundedMap(Codec.STRING, NecklaceModifier.CODEC).xmap(NecklaceModifiers::new, NecklaceModifiers::modifiers);
+        MODIFIERS_STREAM_CODEC = ByteBufCodecs.map(Object2ObjectOpenHashMap::new, ByteBufCodecs.STRING_UTF8, NecklaceModifier.STREAM_CODEC);
+        STREAM_CODEC = MODIFIERS_STREAM_CODEC.map(NecklaceModifiers::new, NecklaceModifiers::modifiers);
     }
 }
